@@ -10,7 +10,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ghcr.io/florarr98/portfolio
+  IMAGE_NAME: ghcr.io/florarr98/portfolio-app
   VERSION: v1.0
   TAG: ${{ github.run_number }}
 
