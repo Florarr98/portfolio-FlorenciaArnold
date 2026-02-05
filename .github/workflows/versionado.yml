@@ -25,7 +25,7 @@ jobs:
       # Build de la imagen
       - name: Build image
         run: |
-          docker build -t "${IMAGE_NAME}:${VERSION}-${TAG}" .
+         docker build -f dockerizar-app/Dockerfile -t "${IMAGE_NAME}:${VERSION}-${TAG}" dockerizar-app
 
       # Run del contenedor (background)
       - name: Run container
