@@ -1,0 +1,72 @@
+name: CI - Build, Test, Push
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/florarr98/portfolio
+  VERSION: v1.0
+  TAG: ${{ github.run_number }}
+
+jobs:
+  versionado_tags:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Build de la imagen
+      - name: Build image
+        run: |
+          docker build -t "${IMAGE_NAME}:${VERSION}-${TAG}" .
+
+      # Run del contenedor (background)
+      - name: Run container
+        run: |
+          docker run -d --rm --name app -p 8080:80 "${IMAGE_NAME}:${VERSION}-${TAG}"
+
+      # "Tests" mínimos: esperar y chequear 200 + contenido
+      - name: Smoke test (HTTP 200)
+        run: |
+          set -e
+          for i in {1..20}; do
+            if curl -fsS http://localhost:8080 >/dev/null; then
+              echo "OK: server esta ok"
+              break
+            fi
+            echo "waiting... ($i)"
+            sleep 1
+          done
+
+          curl -i http://localhost:8080 | head -n 20
+          curl -fsS http://localhost:8080 | grep -q "Portfolio Florencia Arnold"
+
+      - name: Show container logs (debug)
+        if: always()
+        run: |
+          docker logs app || true
+
+      - name: Stop container
+        if: always()
+        run: |
+          docker stop app || true
+
+      # Push SOLO si es push a main (no en PR)
+      - name: Login to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Push image to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker push "${IMAGE_NAME}:${VERSION}-${TAG}"
+          docker tag "${IMAGE_NAME}:${VERSION}-${TAG}" "${IMAGE_NAME}:latest"
+          docker push "${IMAGE_NAME}:latest"
