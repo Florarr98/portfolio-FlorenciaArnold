@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portfolio
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: portfolio
+  template:
+    metadata:
+      labels:
+        app: portfolio
+    spec:
+      imagePullSecrets:
+        - name: ghcr
+      containers:
+        - name: portfolio
+          image: ghcr.io/florarr98/portfolio-app:latest
+          ports:
+            - containerPort: 80
+
