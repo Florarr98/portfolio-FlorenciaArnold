@@ -17,6 +17,7 @@ spec:
       containers:
         - name: portfolio
           image: ghcr.io/florarr98/portfolio-app:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
 
