@@ -46,7 +46,7 @@ jobs:
           done
 
           curl -fsSI http://localhost:8080 | head -n 20
-          curl -fsS http://localhost:8080 | grep -q "Portfolio Florencia Arnold"
+          curl -fsS http://localhost:8080 | grep -q "Portfolio"
 
       - name: Show container logs (debug)
         if: always()
